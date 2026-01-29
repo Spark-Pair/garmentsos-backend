@@ -11,7 +11,7 @@
     "email": "info@wonderfashion.com"
   },
   "license": {
-    "expiry": "2025-12-31"
+    "expiry": "2026-03-31"
   },
   "security": {
     "jwt_secret": "garmentsos_sparkpair_secret_key",
