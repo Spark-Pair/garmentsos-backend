@@ -15,21 +15,26 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(cors());
 app.use(express.json());
 
+app.use('/api/auth', require('./routes/authRoutes'));
+
 // Subscription check middleware
 app.use((req, res, next) => {
   const expiryDate = new Date(appConfig.license.expiry);
   if (new Date() > expiryDate) {
     return res.status(403).json({
       success: false,
-      message: 'Subscription expired. Please contact SparkPair to renew.',
-      expiredOn: appConfig.license.expiry
+      message: 'Subscription expired',
+      // Yeh data block must hai frontend ke liye
+      data: {
+        subscriptionExpiry: appConfig.license.expiry,
+        companyName: appConfig.app.name
+      }
     });
   }
   next();
 });
 
 // Routes
-app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/articles', require('./routes/articleRoutes'));
 app.use('/api/config', require('./routes/configRoutes'));
