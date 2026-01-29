@@ -39,7 +39,7 @@ app.use('/api/options', require('./routes/optionsRoutes'));
 app.get('/api/health', (req, res) => {
   res.json({ 
     success: true, 
-    message: 'Wonder Fashion API is running',
+    message: 'GarmetnsOS API is running',
     poweredBy: process.env.POWERED_BY 
   });
 });
