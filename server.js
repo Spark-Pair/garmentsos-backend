@@ -3,7 +3,11 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
+// Load environment variables
 dotenv.config();
+
+// Connect to database
+connectDB();
 
 const app = express();
 
@@ -11,13 +15,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect DB (safe for Vercel)
-connectDB();
-
 // Subscription check middleware
 app.use((req, res, next) => {
-  if (!process.env.SUBSCRIPTION_EXPIRY) return next();
-
   const expiryDate = new Date(process.env.SUBSCRIPTION_EXPIRY);
   if (new Date() > expiryDate) {
     return res.status(403).json({
@@ -38,11 +37,26 @@ app.use('/api/options', require('./routes/optionsRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'GarmentsOS API is running on Vercel',
-    poweredBy: process.env.POWERED_BY
+  res.json({ 
+    success: true, 
+    message: 'GarmetnsOS API is running',
+    poweredBy: process.env.POWERED_BY 
   });
 });
 
-module.exports = app;
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    message: 'Internal Server Error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Powered by ${process.env.POWERED_BY}`);
+});
