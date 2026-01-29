@@ -7,7 +7,8 @@ const {
     createArticle,
     updateArticle,
     deleteArticle,
-    getArticleStats
+    getArticleStats,
+    getBulkArticles
 } = require('../controllers/articleController');
 const { protect } = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -16,62 +17,82 @@ const upload = require('../middleware/upload');
 const articleValidation = [
     body('article_no')
         .trim()
-        .notEmpty().withMessage('Article number is required'),
+        .notEmpty().withMessage('Article number is required')
+        .toUpperCase(), // Auto uppercase
     body('season')
-        .notEmpty().withMessage('Season is required')
-        .isIn([
-            'Spring 2024', 'Summer 2024', 'Fall 2024', 'Winter 2024',
-            'Spring 2025', 'Summer 2025', 'Fall 2025', 'Winter 2025'
-        ]).withMessage('Invalid season'),
+        .notEmpty().withMessage('Season is required'),
     body('size')
         .trim()
         .notEmpty().withMessage('Size is required'),
     body('category')
-        .notEmpty().withMessage('Category is required')
-        .isIn(['Men', 'Women', 'Kids', 'Unisex']).withMessage('Invalid category'),
+        .notEmpty().withMessage('Category is required'),
     body('fabric_type')
-        .notEmpty().withMessage('Fabric type is required')
-        .isIn(['Woven', 'Knitted', 'Non-Woven', 'Blended']).withMessage('Invalid fabric type'),
+        .notEmpty().withMessage('Fabric type is required'),
+    body('quantity')
+        .notEmpty().withMessage('Quantity is required')
+        .isInt({ min: 0 }).withMessage('Quantity must be a positive number'),
     body('sales_rate')
         .notEmpty().withMessage('Sales rate is required')
         .isNumeric().withMessage('Sales rate must be a number')
         .custom((value) => value >= 0).withMessage('Sales rate must be positive'),
     body('rates')
         .optional()
-        .isArray().withMessage('Rates must be an array'),
-    body('rates.*.category')
-        .optional()
-        .isIn(['fabric', 'work', 'accessory', 'labor']).withMessage('Invalid rate category'),
-    body('rates.*.title')
+        .custom((value) => {
+            // Accept both string (JSON) and array
+            if (typeof value === 'string') {
+                try {
+                    JSON.parse(value);
+                    return true;
+                } catch (e) {
+                    throw new Error('Invalid rates format');
+                }
+            }
+            return Array.isArray(value);
+        }).withMessage('Rates must be an array or valid JSON'),
+    body('description')
         .optional()
         .trim()
-        .notEmpty().withMessage('Rate title is required'),
-    body('rates.*.price')
-        .optional()
-        .isNumeric().withMessage('Rate price must be a number')
 ];
 
 const updateArticleValidation = [
-    body('article_no').optional().trim().notEmpty().withMessage('Article number cannot be empty'),
+    body('article_no')
+        .optional()
+        .trim()
+        .notEmpty().withMessage('Article number cannot be empty')
+        .toUpperCase(),
     body('season')
         .optional()
-        .isIn([
-            'Spring 2024', 'Summer 2024', 'Fall 2024', 'Winter 2024',
-            'Spring 2025', 'Summer 2025', 'Fall 2025', 'Winter 2025'
-        ]).withMessage('Invalid season'),
-    body('size').optional().trim().notEmpty().withMessage('Size cannot be empty'),
+        .notEmpty().withMessage('Season cannot be empty'),
+    body('size')
+        .optional()
+        .trim()
+        .notEmpty().withMessage('Size cannot be empty'),
     body('category')
         .optional()
-        .isIn(['Men', 'Women', 'Kids', 'Unisex']).withMessage('Invalid category'),
+        .notEmpty().withMessage('Category cannot be empty'),
     body('fabric_type')
         .optional()
-        .isIn(['Woven', 'Knitted', 'Non-Woven', 'Blended']).withMessage('Invalid fabric type'),
+        .notEmpty().withMessage('Fabric type cannot be empty'),
+    body('quantity')
+        .optional()
+        .isInt({ min: 0 }).withMessage('Quantity must be positive'),
     body('sales_rate')
         .optional()
-        .isNumeric().withMessage('Sales rate must be a number'),
+        .isNumeric().withMessage('Sales rate must be a number')
+        .custom((value) => value >= 0).withMessage('Sales rate must be positive'),
     body('rates')
         .optional()
-        .isArray().withMessage('Rates must be an array')
+        .custom((value) => {
+            if (typeof value === 'string') {
+                try {
+                    JSON.parse(value);
+                    return true;
+                } catch (e) {
+                    throw new Error('Invalid rates format');
+                }
+            }
+            return Array.isArray(value);
+        })
 ];
 
 // Apply protection to all routes
@@ -80,18 +101,17 @@ router.use(protect);
 // Stats route (must be before :id route)
 router.get('/stats', getArticleStats);
 
+// Bulk articles
+router.post('/bulk', getBulkArticles);
+
 // Routes
 router.route('/')
     .get(getArticles)
-    .post(
-        upload.single('image'), // Pehle image parse hogi
-        articleValidation,      // Phir data validate hoga
-        createArticle           // Phir save hoga
-    );
+    .post(upload.single('image'), articleValidation, createArticle);
 
 router.route('/:id')
     .get(getArticle)
-    .put(updateArticleValidation, upload.single('image'), updateArticle)
+    .put(upload.single('image'), updateArticleValidation, updateArticle)
     .delete(deleteArticle);
 
 module.exports = router;

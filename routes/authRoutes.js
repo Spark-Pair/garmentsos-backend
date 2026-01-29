@@ -6,13 +6,22 @@ const { protect } = require('../middleware/auth');
 
 // Validation rules
 const loginValidation = [
-    body('username').trim().notEmpty().withMessage('Username is required'),
-    body('password').notEmpty().withMessage('Password is required')
+    body('username')
+        .trim()
+        .notEmpty().withMessage('Username is required')
+        .toLowerCase(),
+    body('password')
+        .notEmpty().withMessage('Password is required')
 ];
 
 const profileValidation = [
-    body('name').optional().trim().notEmpty().withMessage('Name cannot be empty'),
-    body('password').optional().isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+    body('name')
+        .optional()
+        .trim()
+        .notEmpty().withMessage('Name cannot be empty'),
+    body('password')
+        .optional()
+        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ];
 
 // Routes

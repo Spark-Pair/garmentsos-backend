@@ -24,16 +24,13 @@ const RATE_CATEGORIES = {
 };
 
 // Seasons
-const SEASONS = [
-    'Spring 2024', 'Summer 2024', 'Fall 2024', 'Winter 2024',
-    'Spring 2025', 'Summer 2025', 'Fall 2025', 'Winter 2025'
-];
+const SEASONS = ['Half', 'Full', 'Winter'];
+
+// Sizes
+const SIZES = ['SML', 'XL', 'MLXL', '1-2'];
 
 // Categories
-const CATEGORIES = ['Men', 'Women', 'Kids', 'Unisex'];
-
-// Fabric Types
-const FABRIC_TYPES = ['Woven', 'Knitted', 'Non-Woven', 'Blended'];
+const CATEGORIES = ['1 Piece', '2 Piece', '3 Piece'];
 
 // User Roles
 const USER_ROLES = {
@@ -44,7 +41,7 @@ const USER_ROLES = {
 module.exports = {
     RATE_CATEGORIES,
     SEASONS,
+    SIZES,
     CATEGORIES,
-    FABRIC_TYPES,
     USER_ROLES
 };

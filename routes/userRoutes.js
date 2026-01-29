@@ -16,13 +16,17 @@ const createUserValidation = [
     body('username')
         .trim()
         .notEmpty().withMessage('Username is required')
-        .isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
+        .isLength({ min: 3 }).withMessage('Username must be at least 3 characters')
+        .toLowerCase(), // Auto convert to lowercase
     body('password')
         .notEmpty().withMessage('Password is required')
         .isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     body('role')
         .optional()
-        .isIn(['developer', 'user']).withMessage('Invalid role')
+        .isIn(['developer', 'user']).withMessage('Invalid role'),
+    body('isActive')
+        .optional()
+        .isBoolean().withMessage('isActive must be boolean')
 ];
 
 const updateUserValidation = [
@@ -32,7 +36,10 @@ const updateUserValidation = [
         .isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     body('role')
         .optional()
-        .isIn(['developer', 'user']).withMessage('Invalid role')
+        .isIn(['developer', 'user']).withMessage('Invalid role'),
+    body('isActive')
+        .optional()
+        .isBoolean().withMessage('isActive must be boolean')
 ];
 
 // Apply protection to all routes

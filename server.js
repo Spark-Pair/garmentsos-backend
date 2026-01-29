@@ -1,15 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db');
+const appConfig = require('./app.config.json');
+const path = require('path');
 
 // Load environment variables
 dotenv.config();
 
-// Connect to database
-connectDB();
-
 const app = express();
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware
 app.use(cors());
@@ -17,12 +17,12 @@ app.use(express.json());
 
 // Subscription check middleware
 app.use((req, res, next) => {
-  const expiryDate = new Date(process.env.SUBSCRIPTION_EXPIRY);
+  const expiryDate = new Date(appConfig.license.expiry);
   if (new Date() > expiryDate) {
     return res.status(403).json({
       success: false,
       message: 'Subscription expired. Please contact SparkPair to renew.',
-      expiredOn: process.env.SUBSCRIPTION_EXPIRY
+      expiredOn: appConfig.license.expiry
     });
   }
   next();
@@ -40,7 +40,7 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     success: true, 
     message: 'GarmetnsOS API is running',
-    poweredBy: process.env.POWERED_BY 
+    poweredBy: appConfig.developer.powered_by 
   });
 });
 
@@ -50,13 +50,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({
     success: false,
     message: 'Internal Server Error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    error: appConfig.app.developer === 'development' ? err.message : undefined
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = appConfig.app.port || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Powered by ${process.env.POWERED_BY}`);
+  console.log(`Powered by ${appConfig.developer.powered_by}`);
 });

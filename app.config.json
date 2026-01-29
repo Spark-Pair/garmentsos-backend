@@ -1,0 +1,24 @@
+{
+  "app": {
+    "name": "GarmentsOS - Article Management System",
+    "environment": "development",
+    "port": 5000
+  },
+  "company": {
+    "name": "Wonder Fashion",
+    "address": "Industrial Area, Fashion City",
+    "phone": "+92-300-1234567",
+    "email": "info@wonderfashion.com"
+  },
+  "license": {
+    "expiry": "2026-12-31"
+  },
+  "security": {
+    "jwt_secret": "garmentsos_sparkpair_secret_key",
+    "jwt_expire": "1d"
+  },
+  "developer": {
+    "powered_by": "SparkPair",
+    "developer_key": "sparkpair_dev"
+  }
+}

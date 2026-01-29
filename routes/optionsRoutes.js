@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth');
-
-// Yahan check karein ke path bilkul sahi ho
+const { protect, isDeveloper } = require('../middleware/auth');
 const { getAllOptions, handleOptionUpdate } = require('../controllers/optionsController');
 
-// Routes
-router.get('/', getAllOptions); // Error yahan tha, kyunki getAllOptions undefined tha
+// Get all options (public or protected - your choice)
+router.get('/', getAllOptions);
 
+// Protected routes for updates
 router.use(protect);
+router.use(isDeveloper); // Only developers can update options
 
 router.post('/:type', handleOptionUpdate);
 router.post('/:type/:category', handleOptionUpdate);
