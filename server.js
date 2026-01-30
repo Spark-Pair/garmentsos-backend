@@ -21,7 +21,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use((req, res, next) => {
   const expiryDate = new Date(appConfig.license.expiry);
   if (new Date() > expiryDate) {
-    return res.status(403).json({
+    return res.json({
       success: false,
       message: 'Subscription expired',
       // Yeh data block must hai frontend ke liye
