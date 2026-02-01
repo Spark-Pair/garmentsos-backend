@@ -41,19 +41,18 @@ const initTables = () => {
     )
   `);
 
-  // Rates table
+  // Rates table - CORRECTED to match frontend
   db.exec(`
     CREATE TABLE IF NOT EXISTS rates (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       article_id INTEGER NOT NULL,
-      category TEXT NOT NULL,
-      title TEXT NOT NULL,
+      description TEXT NOT NULL,
       price REAL NOT NULL,
       FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
     )
   `);
 
-  // Options table - COLUMN NAME CHANGED
+  // Options table
   db.exec(`
     CREATE TABLE IF NOT EXISTS app_options (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

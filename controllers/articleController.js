@@ -20,7 +20,6 @@ exports.getArticles = async (req, res) => {
       limit = 10
     } = req.query;
 
-    // Build filters
     const filters = {
       search: search?.trim(),
       season: season?.trim(),
@@ -30,21 +29,17 @@ exports.getArticles = async (req, res) => {
       order
     };
 
-    // Pagination
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
     const offset = (pageNum - 1) * limitNum;
 
-    // Get data
     const articles = ArticleQuery.getAll(filters, { limit: limitNum, offset });
     const total = ArticleQuery.count(filters);
 
-    // Add rates to each article
     articles.forEach(article => {
       article.rates = ArticleQuery.getRates(article.id);
     });
 
-    // Calculate pagination
     const totalPages = Math.ceil(total / limitNum);
 
     res.status(200).json({
@@ -107,7 +102,6 @@ exports.createArticle = async (req, res) => {
       description, fabric_type, quantity, rates, sales_rate
     } = req.body;
 
-    // Check if article_no already exists
     const exists = ArticleQuery.findByArticleNo(article_no);
     if (exists) {
       if (req.file) fs.unlinkSync(req.file.path);
@@ -117,11 +111,10 @@ exports.createArticle = async (req, res) => {
       });
     }
 
-    // Parse rates
+    // Parse rates from frontend format
     const parsedRates = typeof rates === 'string' ? JSON.parse(rates) : rates;
     const total_cost = parsedRates.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
 
-    // Calculate profit margin
     const salesRateNum = parseFloat(sales_rate);
     const profit_margin = salesRateNum > 0 && total_cost > 0
       ? ((salesRateNum - total_cost) / salesRateNum) * 100
@@ -132,7 +125,6 @@ exports.createArticle = async (req, res) => {
       image_url = req.file.path.replace(/\\/g, '/');
     }
 
-    // Create article
     const articleData = {
       article_no,
       season,
@@ -183,7 +175,6 @@ exports.updateArticle = async (req, res) => {
     const { rates, sales_rate, ...otherData } = req.body;
     let updateData = { ...otherData };
 
-    // Recalculate if rates change
     let parsedRates = null;
     if (rates) {
       parsedRates = typeof rates === 'string' ? JSON.parse(rates) : rates;
@@ -194,7 +185,6 @@ exports.updateArticle = async (req, res) => {
       updateData.sales_rate = parseFloat(sales_rate);
     }
 
-    // Recalculate profit margin
     const finalSalesRate = updateData.sales_rate || article.sales_rate;
     const finalTotalCost = updateData.total_cost || article.total_cost;
     
@@ -202,11 +192,9 @@ exports.updateArticle = async (req, res) => {
       updateData.profit_margin = ((finalSalesRate - finalTotalCost) / finalSalesRate) * 100;
     }
 
-    // Handle image upload
     if (req.file) {
       const newPath = req.file.path.replace(/\\/g, '/');
 
-      // Delete old image
       if (article.image) {
         const oldImagePath = path.join(__dirname, '..', article.image);
         if (fs.existsSync(oldImagePath)) {
@@ -222,7 +210,6 @@ exports.updateArticle = async (req, res) => {
 
     updateData.updated_by = req.user.id;
 
-    // Update article
     article = ArticleQuery.update(req.params.id, updateData, parsedRates);
 
     res.status(200).json({
@@ -259,7 +246,6 @@ exports.deleteArticle = async (req, res) => {
       });
     }
 
-    // Delete image if exists
     if (article.image) {
       const imagePath = path.join(__dirname, '..', article.image);
       if (fs.existsSync(imagePath)) {
@@ -343,7 +329,6 @@ exports.getBulkArticles = async (req, res) => {
 
     const articles = ArticleQuery.getBulk(ids);
 
-    // Add rates to each article
     articles.forEach(article => {
       article.rates = ArticleQuery.getRates(article.id);
     });

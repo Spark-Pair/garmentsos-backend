@@ -13,7 +13,6 @@ exports.getAll = (filters = {}, pagination = {}) => {
   
   const params = [];
 
-  // Search filter
   if (filters.search) {
     query += ` AND (a.article_no LIKE ? OR a.description LIKE ? OR a.size LIKE ?)`;
     const searchTerm = `%${filters.search}%`;
@@ -35,13 +34,11 @@ exports.getAll = (filters = {}, pagination = {}) => {
     params.push(filters.fabric_type);
   }
 
-  // Sorting
   const validSortFields = ['created_at', 'article_no', 'sales_rate', 'total_cost', 'season', 'category', 'updated_at'];
   const sortBy = validSortFields.includes(filters.sortBy) ? filters.sortBy : 'created_at';
   const order = filters.order === 'asc' ? 'ASC' : 'DESC';
   query += ` ORDER BY a.${sortBy} ${order}`;
 
-  // Pagination
   if (pagination.limit) {
     query += ` LIMIT ? OFFSET ?`;
     params.push(pagination.limit, pagination.offset || 0);
@@ -123,14 +120,14 @@ exports.create = (data, rates) => {
 
   const articleId = info.lastInsertRowid;
 
-  // Insert rates
+  // Insert rates - frontend sends {description, price}
   if (rates && rates.length > 0) {
     const insertRate = db.prepare(`
-      INSERT INTO rates (article_id, category, title, price) VALUES (?, ?, ?, ?)
+      INSERT INTO rates (article_id, description, price) VALUES (?, ?, ?)
     `);
 
     for (const rate of rates) {
-      insertRate.run(articleId, rate.category, rate.title, rate.price);
+      insertRate.run(articleId, rate.description, rate.price);
     }
   }
 
@@ -158,11 +155,11 @@ exports.update = (id, data, rates) => {
     db.prepare('DELETE FROM rates WHERE article_id = ?').run(id);
     
     const insertRate = db.prepare(`
-      INSERT INTO rates (article_id, category, title, price) VALUES (?, ?, ?, ?)
+      INSERT INTO rates (article_id, description, price) VALUES (?, ?, ?)
     `);
 
     for (const rate of rates) {
-      insertRate.run(id, rate.category, rate.title, rate.price);
+      insertRate.run(id, rate.description, rate.price);
     }
   }
 
@@ -174,7 +171,7 @@ exports.delete = (id) => {
 };
 
 exports.getRates = (articleId) => {
-  return db.prepare('SELECT category, title, price FROM rates WHERE article_id = ?').all(articleId);
+  return db.prepare('SELECT description, price FROM rates WHERE article_id = ?').all(articleId);
 };
 
 exports.getStats = () => {
